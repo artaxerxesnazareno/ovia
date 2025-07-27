@@ -5,6 +5,24 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot } from 'react-dom/client';
 import { initializeTheme } from './hooks/use-appearance';
 
+// Importar os componentes de páginas para que o Vite os inclua no manifesto
+import './pages/Index';
+import './pages/dashboard';
+import './pages/welcome';
+
+// Importar os componentes de autenticação
+import './pages/auth/confirm-password';
+import './pages/auth/forgot-password';
+import './pages/auth/login';
+import './pages/auth/register';
+import './pages/auth/reset-password';
+import './pages/auth/verify-email';
+
+// Importar os componentes de configurações
+import './pages/settings/appearance';
+import './pages/settings/password';
+import './pages/settings/profile';
+
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
 createInertiaApp({
