@@ -49,7 +49,7 @@
 - **Critério de Aceitação**: `php artisan serve` roda sem erros
 
 **US1.2 - Estrutura de Banco de Dados** (5 SP)
-- [ ] Criar migrations para todas as tabelas principais
+- [x] Criar migrations para todas as tabelas principais
     - users, assessments, questions, courses, recommendations, roadmaps
 - [ ] Criar seeders para dados de teste
     - 10 cursos do IMETRO
