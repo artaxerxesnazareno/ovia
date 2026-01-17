@@ -15,13 +15,13 @@ const Header = ({ currentView, onNavigate, userProgress }: HeaderProps) => {
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-8">
-            <h1 
+            <h1
               className="text-3xl font-bold text-gradient cursor-pointer"
               onClick={() => onNavigate('home')}
             >
-              VocIA
+              OVIA
             </h1>
-            
+
             <nav className="hidden md:flex space-x-6">
               <Button
                 variant={currentView === 'home' ? 'default' : 'ghost'}
@@ -55,7 +55,7 @@ const Header = ({ currentView, onNavigate, userProgress }: HeaderProps) => {
                 <Badge variant="secondary">{userProgress}%</Badge>
               </div>
             )}
-            
+
             <Button className="btn-gradient">
               Entrar
             </Button>

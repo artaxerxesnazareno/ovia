@@ -11,8 +11,9 @@ import Chatbot from '@/components/Chatbot';
 import Dashboard from '@/components/Dashboard';
 import Assessment from '@/components/Assessment';
 
-const Index = () => {
-  const [currentView, setCurrentView] = useState('home');
+
+const Index = ({ initialView = 'home' }: { initialView?: string }) => {
+  const [currentView, setCurrentView] = useState(initialView);
   const [userProgress, setUserProgress] = useState(0);
 
   const renderCurrentView = () => {
@@ -86,7 +87,7 @@ const Index = () => {
             </div>
           </div>
           <div className="border-t border-slate-700 mt-8 pt-8 text-center text-slate-400">
-            <p>&copy; 2024 VocIA. Todos os direitos reservados.</p>
+            <p>&copy; 2026 OVIA. Todos os direitos reservados.</p>
           </div>
         </div>
       </footer>

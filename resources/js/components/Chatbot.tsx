@@ -10,7 +10,7 @@ const Chatbot = () => {
   const [messages, setMessages] = useState([
     {
       id: 1,
-      text: "Olá! Sou a VocIA, sua assistente de orientação vocacional. Como posso ajudá-lo hoje?",
+      text: "Olá! Sou a OVIA, sua assistente de orientação vocacional. Como posso ajudá-lo hoje?",
       sender: "bot",
       timestamp: new Date()
     }
@@ -48,7 +48,7 @@ const Chatbot = () => {
     // Simular resposta da IA
     setTimeout(() => {
       let response = botResponses.default;
-      
+
       if (text.toLowerCase().includes('teste')) response = botResponses.teste;
       else if (text.toLowerCase().includes('plataforma') || text.toLowerCase().includes('funciona')) response = botResponses.plataforma;
       else if (text.toLowerCase().includes('carreira') || text.toLowerCase().includes('escolh')) response = botResponses.carreira;
@@ -85,7 +85,7 @@ const Chatbot = () => {
               <Badge className="bg-white/20 text-white ml-auto">Online</Badge>
             </CardTitle>
           </CardHeader>
-          
+
           <CardContent className="flex flex-col h-full p-0">
             {/* Messages */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4 max-h-64">

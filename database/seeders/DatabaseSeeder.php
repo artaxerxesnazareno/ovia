@@ -16,12 +16,14 @@ class DatabaseSeeder extends Seeder
         $this->call([
             CoursesSeeder::class,
             QuestionsSeeder::class,
+            UserSeeder::class,
             // Outros seeders que você possa ter...
         ]);
 
         User::factory()->create([
             'name' => 'Test User',
             'email' => 'test@example.com',
+            'password' => bcrypt('password'),
         ]);
     }
 }
