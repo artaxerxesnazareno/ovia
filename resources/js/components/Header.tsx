@@ -2,14 +2,22 @@
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserMenuContent } from "@/components/user-menu-content";
+import { useInitials } from "@/hooks/use-initials";
+import { type User } from "@/types";
+import { Link } from "@inertiajs/react";
 
 interface HeaderProps {
   currentView: string;
   onNavigate: (view: string) => void;
   userProgress: number;
+  user?: User;
 }
 
-const Header = ({ currentView, onNavigate, userProgress }: HeaderProps) => {
+const Header = ({ currentView, onNavigate, userProgress, user }: HeaderProps) => {
+  const getInitials = useInitials();
   return (
     <header className="bg-white/80 backdrop-blur-md border-b border-white/20 sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4">
@@ -56,9 +64,29 @@ const Header = ({ currentView, onNavigate, userProgress }: HeaderProps) => {
               </div>
             )}
 
-            <Button className="btn-gradient">
-              Entrar
-            </Button>
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="size-10 rounded-full p-1">
+                    <Avatar className="size-8 overflow-hidden rounded-full">
+                      <AvatarImage src={user.avatar} alt={user.name} />
+                      <AvatarFallback className="rounded-lg bg-neutral-200 text-black dark:bg-neutral-700 dark:text-white">
+                        {getInitials(user.name)}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="end">
+                  <UserMenuContent user={user} />
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Link href={route('login')}>
+                <Button className="btn-gradient">
+                  Entrar
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
       </div>

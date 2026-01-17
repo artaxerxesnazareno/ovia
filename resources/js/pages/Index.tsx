@@ -12,7 +12,11 @@ import Dashboard from '@/components/Dashboard';
 import Assessment from '@/components/Assessment';
 
 
+import { Link, usePage } from '@inertiajs/react';
+import { SharedData } from '@/types';
+
 const Index = ({ initialView = 'home' }: { initialView?: string }) => {
+  const { auth } = usePage<SharedData>().props;
   const [currentView, setCurrentView] = useState(initialView);
   const [userProgress, setUserProgress] = useState(0);
 
@@ -41,6 +45,7 @@ const Index = ({ initialView = 'home' }: { initialView?: string }) => {
         currentView={currentView}
         onNavigate={setCurrentView}
         userProgress={userProgress}
+        user={auth.user}
       />
 
       <main className="relative">
