@@ -38,20 +38,24 @@ const Header = ({ currentView, onNavigate, userProgress, user }: HeaderProps) =>
               >
                 Início
               </Button>
-              <Button
-                variant={currentView === 'dashboard' ? 'default' : 'ghost'}
-                onClick={() => onNavigate('dashboard')}
-                className="font-medium"
-              >
-                Dashboard
-              </Button>
-              <Button
-                variant={currentView === 'assessment' ? 'default' : 'ghost'}
-                onClick={() => onNavigate('assessment')}
-                className="font-medium"
-              >
-                Avaliações
-              </Button>
+              {user && (
+                <>
+                  <Button
+                    variant={currentView === 'dashboard' ? 'default' : 'ghost'}
+                    onClick={() => onNavigate('dashboard')}
+                    className="font-medium"
+                  >
+                    Dashboard
+                  </Button>
+                  <Button
+                    variant={currentView === 'assessment' ? 'default' : 'ghost'}
+                    onClick={() => onNavigate('assessment')}
+                    className="font-medium"
+                  >
+                    Avaliações
+                  </Button>
+                </>
+              )}
             </nav>
           </div>
 

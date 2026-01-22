@@ -26,7 +26,12 @@ Comando Refrescar o banco e rodar todos os seeders
 ```bash
 php artisan migrate:refresh --seed
 ```
-Comando Refrescar o banco e rodar todos os seeders
+
+Comando para criar um model
+```bash
+php artisan make:model NomeDaModel
+```
+Comando para limpar cache do laravel e do vite
 ```bash
 # 1. Primeiro limpe o cache do Laravel
 php artisan optimize:clear
