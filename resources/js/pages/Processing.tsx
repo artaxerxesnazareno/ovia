@@ -1,8 +1,10 @@
-import { Head, router } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import { Loader2, Brain, Sparkles, CheckCircle } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
+import Header from '@/components/Header';
+import { SharedData } from '@/types';
 
 interface ProcessingProps {
     assessment: {
@@ -40,9 +42,24 @@ const processingSteps = [
 ];
 
 export default function Processing({ assessment }: ProcessingProps) {
+    const { auth } = usePage<SharedData>().props;
     const [currentStep, setCurrentStep] = useState(0);
     const [progress, setProgress] = useState(0);
     const [elapsedTime, setElapsedTime] = useState(0);
+
+    const handleHeaderNavigate = (view: string) => {
+        if (view === 'assessment') {
+            router.visit('/assessment/start');
+            return;
+        }
+
+        if (view === 'dashboard') {
+            router.visit('/app-dashboard');
+            return;
+        }
+
+        router.visit('/');
+    };
 
     // Polling para verificar status
     useEffect(() => {
@@ -101,8 +118,9 @@ export default function Processing({ assessment }: ProcessingProps) {
         <>
             <Head title="Processando Avaliação" />
 
-            <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 flex items-center justify-center py-12">
-                <div className="container mx-auto px-4 max-w-2xl">
+            <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
+                <Header currentView="assessment" onNavigate={handleHeaderNavigate} userProgress={0} user={auth.user} />
+                <div className="container mx-auto max-w-2xl px-4 py-12">
                     {/* Animação Principal */}
                     <div className="text-center mb-8">
                         <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full mb-6 animate-pulse">

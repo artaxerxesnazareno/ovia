@@ -1,8 +1,10 @@
-import { Head, router } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
 import { Clock, FileText, Compass, Star, Heart, User, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import Header from '@/components/Header';
+import { SharedData } from '@/types';
 
 interface StartProps {
     hasExistingAssessment: boolean;
@@ -38,6 +40,22 @@ export default function Start({
                                   totalQuestions,
                                   estimatedTime,
                               }: StartProps) {
+    const { auth } = usePage<SharedData>().props;
+
+    const handleHeaderNavigate = (view: string) => {
+        if (view === 'assessment') {
+            router.visit('/assessment/start');
+            return;
+        }
+
+        if (view === 'dashboard') {
+            router.visit('/app-dashboard');
+            return;
+        }
+
+        router.visit('/');
+    };
+
     const handleStart = () => {
         router.post('/assessment/create');
     };
@@ -50,8 +68,9 @@ export default function Start({
         <>
             <Head title="Iniciar Avaliação Vocacional" />
 
-            <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 py-12">
-                <div className="container mx-auto px-4 max-w-4xl">
+            <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
+                <Header currentView="assessment" onNavigate={handleHeaderNavigate} userProgress={0} user={auth.user} />
+                <div className="container mx-auto max-w-4xl px-4 py-12">
                     {/* Header */}
                     <div className="text-center mb-12">
                         <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
@@ -194,7 +213,7 @@ export default function Start({
                             <strong>Dicas importantes:</strong>
                             <ul className="list-disc list-inside mt-2 space-y-1 text-sm">
                                 <li>Responda com honestidade, não há respostas certas ou erradas</li>
-                                <li>Suas respostas são salvas automaticamente a cada 5 questões</li>
+                                <li>Suas respostas são salvas automaticamente enquanto você responde</li>
                                 <li>Você pode pausar e continuar depois a qualquer momento</li>
                                 <li>Reserve um tempo sem interrupções para melhores resultados</li>
                             </ul>

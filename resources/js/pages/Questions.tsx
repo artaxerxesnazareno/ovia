@@ -1,4 +1,4 @@
-import { Head, router } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
 import { useState, useEffect, useCallback } from 'react';
 import { ChevronLeft, ChevronRight, Save, Send, Compass, Star, Heart, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -8,6 +8,8 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
+import Header from '@/components/Header';
+import { SharedData } from '@/types';
 
 interface Question {
     id: number;
@@ -66,6 +68,22 @@ export default function Questions({
                                       savedTextResponses,
                                       categoryMetadata,
                                   }: QuestionsProps) {
+    const { auth } = usePage<SharedData>().props;
+
+    const handleHeaderNavigate = (view: string) => {
+        if (view === 'assessment') {
+            router.visit('/assessment/start');
+            return;
+        }
+
+        if (view === 'dashboard') {
+            router.visit('/app-dashboard');
+            return;
+        }
+
+        router.visit('/');
+    };
+
     const categories = Object.keys(questions);
     const [currentCategoryIndex, setCurrentCategoryIndex] = useState(() => {
         const firstIncompleteIndex = categories.findIndex((category) =>
@@ -263,8 +281,9 @@ export default function Questions({
         <>
             <Head title="Questionário de Avaliação" />
 
-            <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 py-8">
-                <div className="container mx-auto px-4 max-w-4xl">
+            <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
+                <Header currentView="assessment" onNavigate={handleHeaderNavigate} userProgress={0} user={auth.user} />
+                <div className="container mx-auto max-w-4xl px-4 py-8">
                     {/* Progress Bar */}
                     <Card className="mb-6">
                         <CardContent className="pt-6">

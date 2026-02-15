@@ -12,7 +12,7 @@ import Dashboard from '@/components/Dashboard';
 import Assessment from '@/components/Assessment';
 
 
-import { Link, usePage } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
 import { SharedData } from '@/types';
 
 const Index = ({ initialView = 'home' }: { initialView?: string }) => {
@@ -20,10 +20,19 @@ const Index = ({ initialView = 'home' }: { initialView?: string }) => {
   const [currentView, setCurrentView] = useState(initialView);
   const [userProgress, setUserProgress] = useState(0);
 
+  const handleNavigate = (view: string) => {
+    if (view === 'assessment') {
+      router.visit('/assessment/start');
+      return;
+    }
+
+    setCurrentView(view);
+  };
+
   const renderCurrentView = () => {
     switch (currentView) {
       case 'dashboard':
-        return <Dashboard onStartAssessment={() => setCurrentView('assessment')} />;
+        return <Dashboard onStartAssessment={() => router.visit('/assessment/start')} />;
       case 'assessment':
         return <Assessment onComplete={() => {
           setUserProgress(100);
@@ -43,7 +52,7 @@ const Index = ({ initialView = 'home' }: { initialView?: string }) => {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50">
       <Header
         currentView={currentView}
-        onNavigate={setCurrentView}
+        onNavigate={handleNavigate}
         userProgress={userProgress}
         user={auth.user}
       />
