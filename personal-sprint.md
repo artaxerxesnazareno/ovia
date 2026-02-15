@@ -51,26 +51,26 @@
 **US1.2 - Estrutura de Banco de Dados** (5 SP)
 - [x] Criar migrations para todas as tabelas principais
     - users, assessments, questions, courses, recommendations, roadmaps
-- [ ] Criar seeders para dados de teste
+- [x] Criar seeders para dados de teste
     - 10 cursos do IMETRO
     - 40 questões (10 por categoria)
-- [ ] Executar migrations e seeds
+- [x] Executar migrations e seeds
 - **Critério de Aceitação**: BD populado com dados de teste
 
 **US1.3 - Sistema de Autenticação** (8 SP)
-- [ ] Implementar registro de usuário
-- [ ] Implementar login/logout
-- [ ] Criar middleware de autenticação
-- [ ] Páginas: /register, /login, /dashboard
-- [ ] Validações de formulário
-- [ ] Flash messages (sucesso/erro)
+- [x] Implementar registro de usuário
+- [x] Implementar login/logout
+- [x] Criar middleware de autenticação
+- [x] Páginas: /register, /login, /dashboard
+- [x] Validações de formulário
+- [x] Flash messages (sucesso/erro)
 - **Critério de Aceitação**: Usuário consegue se registrar, fazer login e acessar dashboard protegido
 
 **US1.4 - Layout Base e UI Foundation** (3 SP)
-- [ ] Instalar e configurar Tailwind CSS
-- [ ] Criar layout master (app.blade.php)
-- [ ] Componentes base: navbar, footer, alerts
-- [ ] Página inicial (landing page simples)
+- [x] Instalar e configurar Tailwind CSS
+- [x] Criar layout master (app.blade.php)
+- [x] Componentes base: navbar, footer, alerts
+- [x] Página inicial (landing page simples)
 - **Critério de Aceitação**: Layout responsivo funcionando
 
 ### 📝 Tarefas Diárias
@@ -142,32 +142,32 @@
 #### User Stories
 
 **US2.1 - Modelo de Dados do Questionário** (3 SP)
-- [ ] Models: Question, Assessment, AssessmentResponse
-- [ ] Relationships eloquentes
-- [ ] Validações no modelo
+- [x] Models: Question, Assessment, AssessmentResponse
+- [x] Relationships eloquentes
+- [x] Validações no modelo
 - **Critério de Aceitação**: Eloquent queries funcionando
 
 **US2.2 - Interface do Questionário - Parte 1** (8 SP)
-- [ ] Rota: /assessment/start
-- [ ] Controller: AssessmentController
-- [ ] View: Página de introdução
-- [ ] View: Questões de múltipla escolha (Likert 1-5)
-- [ ] Navegação entre seções (4 seções)
-- [ ] Barra de progresso visual
+- [x] Rota: /assessment/start
+- [x] Controller: AssessmentController
+- [x] View: Página de introdução
+- [x] View: Questões de múltipla escolha (Likert 1-5)
+- [x] Navegação entre seções (4 seções)
+- [x] Barra de progresso visual
 - **Critério de Aceitação**: Usuário navega pelas 40 questões com UI agradável
 
 **US2.3 - Interface do Questionário - Parte 2** (5 SP)
-- [ ] Questões abertas (3 campos de texto)
-- [ ] Validações inline (JavaScript)
-- [ ] Salvamento automático (AJAX a cada 5 respostas)
-- [ ] Botão "Pausar e continuar depois"
+- [x] Questões abertas (3 campos de texto)
+- [x] Validações inline (JavaScript)
+- [x] Salvamento automático (AJAX a cada 5 respostas)
+- [x] Botão "Pausar e continuar depois"
 - **Critério de Aceitação**: Respostas salvas mesmo se usuário sair
 
 **US2.4 - Backend de Processamento de Respostas** (5 SP)
-- [ ] Route POST /assessment/submit
-- [ ] Salvar todas as respostas no BD
-- [ ] Criar registro de Assessment com status "pending"
-- [ ] Validação server-side de todas as respostas
+- [x] Route POST /assessment/submit
+- [x] Salvar todas as respostas no BD
+- [x] Criar registro de Assessment com status "pending"
+- [x] Validação server-side de todas as respostas
 - **Critério de Aceitação**: Respostas persistidas corretamente no BD
 
 **US2.5 - Página de "Processando"** (2 SP)

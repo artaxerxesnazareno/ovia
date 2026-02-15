@@ -22,16 +22,21 @@ import './pages/auth/verify-email';
 import './pages/settings/appearance';
 import './pages/settings/password';
 import './pages/settings/profile';
+import { Toaster } from 'sonner';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
-
 createInertiaApp({
     title: (title) => title ? `${title} - ${appName}` : appName,
     resolve: (name) => resolvePageComponent(`./pages/${name}.tsx`, import.meta.glob('./pages/**/*.tsx')),
     setup({ el, App, props }) {
         const root = createRoot(el);
 
-        root.render(<App {...props} />);
+        root.render(
+            <>
+                <App {...props} />
+                <Toaster position="top-right" richColors />
+            </>
+        );
     },
     progress: {
         color: '#4B5563',
