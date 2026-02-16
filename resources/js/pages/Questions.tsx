@@ -260,9 +260,7 @@ export default function Questions({
 
             if (data.success) {
                 toast.success('Avaliação enviada com sucesso!');
-                setTimeout(() => {
-                    router.visit(data.redirect_url);
-                }, 1000);
+                router.visit(data.redirect_url);
             } else {
                 toast.error(data.message || 'Erro ao enviar avaliação');
             }

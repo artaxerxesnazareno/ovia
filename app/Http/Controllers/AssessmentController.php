@@ -311,17 +311,30 @@ class AssessmentController extends Controller
     /**
      * Página de processamento (loading)
      */
-    public function processing($assessmentId): Response
+    public function processing($assessmentId)
     {
         $assessment = Assessment::where('id', $assessmentId)
             ->where('user_id', auth()->id())
             ->firstOrFail();
+
+        if ($assessment->status === 'pending') {
+            return redirect()->route('assessment.questions', [
+                'assessmentId' => $assessment->id,
+            ]);
+        }
+
+        $totalQuestions = Question::where('is_active', true)->count();
 
         return Inertia::render('Processing', [
             'assessment' => [
                 'id' => $assessment->id,
                 'status' => $assessment->status,
                 'completed_at' => $assessment->completed_at,
+                'total_questions' => $totalQuestions,
+            ],
+            'ux' => [
+                'poll_interval_ms' => 2000,
+                'timeout_seconds' => 30,
             ],
         ]);
     }
@@ -341,7 +354,11 @@ class AssessmentController extends Controller
         ];
 
         if ($assessment->status === 'completed') {
-            $response['redirect_url'] = route('results.show', ['assessmentId' => $assessmentId]);
+            $response['redirect_url'] = route('app.dashboard');
+        }
+
+        if ($assessment->status === 'failed') {
+            $response['message'] = 'Nao foi possivel concluir o processamento agora. Tente novamente em instantes.';
         }
 
         return response()->json($response);

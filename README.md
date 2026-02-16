@@ -61,3 +61,6 @@ npm run dev
 # 4. Em outro terminal, inicie o Laravel
 php artisan serve
 ```
+```bash
+php artisan serve
+```
