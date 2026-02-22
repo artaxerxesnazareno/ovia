@@ -9,7 +9,7 @@ use Throwable;
 
 class LLMService
 {
-    private ?string $lastGeminiHttpBody = null;
+    private ?string $lastProviderHttpBody = null;
 
     /**
      * Gera uma resposta em JSON a partir do prompt.
@@ -42,15 +42,16 @@ class LLMService
 
         return match ($provider) {
             'gemini' => $this->callGemini($prompt, $forceJson, $responseSchema),
+            'deepseek' => $this->callDeepseek($prompt, $forceJson),
             default => throw new RuntimeException(
-                "Provider '{$provider}' ainda nao esta implementado. Defina LLM_PROVIDER=gemini."
+                "Provider '{$provider}' nao suportado. Defina LLM_PROVIDER=gemini ou LLM_PROVIDER=deepseek."
             ),
         };
     }
 
     private function callGemini(string $prompt, bool $forceJson, ?array $responseSchema = null): string
     {
-        $this->lastGeminiHttpBody = null;
+        $this->lastProviderHttpBody = null;
 
         $apiKey = (string) config('llm.gemini.api_key');
         $baseUrl = rtrim((string) config('llm.gemini.base_url', ''), '/');
@@ -113,7 +114,7 @@ class LLMService
                     ->post($url, $payload)
                     ->throw();
 
-                $this->lastGeminiHttpBody = (string) $response->body();
+                $this->lastProviderHttpBody = (string) $response->body();
                 $json = $response->json();
                 $text = data_get($json, 'candidates.0.content.parts.0.text');
                 $finishReason = (string) data_get($json, 'candidates.0.finishReason', '');
@@ -166,6 +167,114 @@ class LLMService
 
         throw new RuntimeException(
             'Falha ao consultar Gemini apos tentativas configuradas.',
+            previous: $lastException
+        );
+    }
+
+    private function callDeepseek(string $prompt, bool $forceJson): string
+    {
+        $this->lastProviderHttpBody = null;
+
+        $apiKey = (string) config('llm.deepseek.api_key');
+        $baseUrl = rtrim((string) config('llm.deepseek.base_url', ''), '/');
+        $model = (string) config('llm.deepseek.model', 'deepseek-chat');
+        $defaultMaxOutputTokens = max((int) config('llm.deepseek.max_output_tokens', 4096), 1);
+
+        if ($apiKey === '') {
+            throw new RuntimeException('DEEPSEEK_API_KEY nao configurada.');
+        }
+
+        if ($baseUrl === '') {
+            throw new RuntimeException('DEEPSEEK_BASE_URL nao configurada.');
+        }
+
+        $payload = [
+            'model' => $model,
+            'messages' => [
+                [
+                    'role' => 'user',
+                    'content' => $prompt,
+                ],
+            ],
+            'temperature' => (float) config('llm.deepseek.temperature', 0.2),
+            'max_tokens' => $defaultMaxOutputTokens,
+        ];
+
+        if ($forceJson) {
+            $payload['max_tokens'] = max(
+                (int) config('llm.deepseek.json_max_output_tokens', $defaultMaxOutputTokens),
+                1
+            );
+            $payload['response_format'] = [
+                'type' => 'json_object',
+            ];
+        }
+
+        $attempts = max((int) config('llm.retry_attempts', 1), 1);
+        $timeout = max((int) config('llm.timeout', 30), 1);
+
+        $lastException = null;
+        $url = "{$baseUrl}/chat/completions";
+
+        for ($attempt = 1; $attempt <= $attempts; $attempt++) {
+            try {
+                $response = Http::timeout($timeout)
+                    ->acceptJson()
+                    ->asJson()
+                    ->withToken($apiKey)
+                    ->post($url, $payload)
+                    ->throw();
+
+                $this->lastProviderHttpBody = (string) $response->body();
+                $json = $response->json();
+                $text = data_get($json, 'choices.0.message.content');
+
+                if (is_array($text)) {
+                    $text = collect($text)
+                        ->map(function ($item) {
+                            if (is_string($item)) {
+                                return $item;
+                            }
+
+                            if (is_array($item)) {
+                                return (string) ($item['text'] ?? '');
+                            }
+
+                            return '';
+                        })
+                        ->implode('');
+                }
+
+                if (!is_string($text) || trim($text) === '') {
+                    throw new RuntimeException('Resposta vazia ou invalida retornada pelo DeepSeek.');
+                }
+
+                return trim($text);
+            } catch (Throwable $exception) {
+                $lastException = $exception;
+
+                Log::warning('llm.deepseek.request.retry', [
+                    'provider' => 'deepseek',
+                    'model' => $model,
+                    'attempt' => $attempt,
+                    'attempts' => $attempts,
+                    'error' => $exception->getMessage(),
+                    'will_retry' => $attempt < $attempts,
+                ]);
+
+                if ($attempt < $attempts) {
+                    // Backoff curto para erro transiente (rede/limite momentaneo).
+                    usleep($attempt * 200000);
+                }
+            }
+        }
+
+        if ($lastException instanceof RuntimeException) {
+            throw $lastException;
+        }
+
+        throw new RuntimeException(
+            'Falha ao consultar DeepSeek apos tentativas configuradas.',
             previous: $lastException
         );
     }
@@ -374,7 +483,7 @@ class LLMService
     private function decodeJsonResponse(string $rawText): array
     {
         $provider = (string) config('llm.provider', 'gemini');
-        $model = (string) config('llm.gemini.model', 'gemini-2.5-flash');
+        $model = $this->resolveModelForProvider($provider);
         $normalized = $this->stripMarkdownCodeFence(trim($rawText));
 
         $decodeException = null;
@@ -405,6 +514,15 @@ class LLMService
             'Resposta do LLM nao veio em JSON valido.',
             previous: $decodeException
         );
+    }
+
+    private function resolveModelForProvider(string $provider): string
+    {
+        return match ($provider) {
+            'gemini' => (string) config('llm.gemini.model', 'gemini-2.5-flash'),
+            'deepseek' => (string) config('llm.deepseek.model', 'deepseek-chat'),
+            default => 'unknown-model',
+        };
     }
 
     private function stripMarkdownCodeFence(string $text): string
@@ -506,7 +624,7 @@ class LLMService
         ?Throwable $exception,
     ): void {
         $fullTextEscaped = $this->escapeControlCharactersForLog($rawText);
-        $httpBody = $this->lastGeminiHttpBody;
+        $httpBody = $this->lastProviderHttpBody;
         $httpBodyEscaped = $httpBody !== null ? $this->escapeControlCharactersForLog($httpBody) : null;
 
         Log::error('llm.json.decode_failed', [
@@ -519,8 +637,11 @@ class LLMService
             'full_response_text' => $rawText,
             'full_response_text_escaped' => $fullTextEscaped,
             'full_response_text_base64' => base64_encode($rawText),
-            'gemini_http_body' => $httpBody,
-            'gemini_http_body_escaped' => $httpBodyEscaped,
+            'provider_http_body' => $httpBody,
+            'provider_http_body_escaped' => $httpBodyEscaped,
+            // Compatibilidade com logs/testes antigos de Gemini.
+            'gemini_http_body' => $provider === 'gemini' ? $httpBody : null,
+            'gemini_http_body_escaped' => $provider === 'gemini' ? $httpBodyEscaped : null,
         ]);
     }
 

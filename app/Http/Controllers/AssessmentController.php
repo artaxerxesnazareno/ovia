@@ -304,7 +304,9 @@ class AssessmentController extends Controller
             DB::commit();
 
             $queueConnection = (string) config('queue.default', 'sync');
-            $dispatchAfterResponse = app()->environment('local') && $queueConnection !== 'sync';
+            // Em local, afterResponse evita depender de worker para perceber o fluxo.
+            // Em conexao sync, dispatch normal bloqueia o response e atrasa a tela de processamento.
+            $dispatchAfterResponse = app()->environment('local') || $queueConnection === 'sync';
 
             if ($dispatchAfterResponse) {
                 ProcessAssessmentJob::dispatchAfterResponse($assessment->id);

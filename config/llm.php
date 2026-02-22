@@ -6,8 +6,9 @@ return [
     | LLM Provider
     |--------------------------------------------------------------------------
     |
-    | Provider atual para as chamadas de IA. Nesta sprint o fluxo pronto
-    | implementa o provider "gemini".
+    | Provider ativo para chamadas de IA. Providers suportados no fluxo atual:
+    | - gemini
+    | - deepseek
     |
     */
     'provider' => env('LLM_PROVIDER', 'gemini'),
@@ -35,6 +36,20 @@ return [
         'json_max_output_tokens' => (int) env('GEMINI_JSON_MAX_OUTPUT_TOKENS', 8192),
         'json_thinking_budget' => (int) env('GEMINI_JSON_THINKING_BUDGET', 0),
         'use_response_schema' => filter_var(env('GEMINI_USE_RESPONSE_SCHEMA', true), FILTER_VALIDATE_BOOL),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | DeepSeek
+    |--------------------------------------------------------------------------
+    */
+    'deepseek' => [
+        'api_key' => env('DEEPSEEK_API_KEY'),
+        'base_url' => env('DEEPSEEK_BASE_URL', 'https://api.deepseek.com/v1'),
+        'model' => env('DEEPSEEK_MODEL', 'deepseek-chat'),
+        'temperature' => (float) env('DEEPSEEK_TEMPERATURE', 0.2),
+        'max_output_tokens' => (int) env('DEEPSEEK_MAX_OUTPUT_TOKENS', 4096),
+        'json_max_output_tokens' => (int) env('DEEPSEEK_JSON_MAX_OUTPUT_TOKENS', 8192),
     ],
 
     /*

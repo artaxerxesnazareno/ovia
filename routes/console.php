@@ -27,7 +27,7 @@ Artisan::command('llm:smoke-test {--prompt=} {--prompt-file=}', function () {
 Retorne apenas um JSON valido com a estrutura:
 {
   "status": "ok",
-  "provider": "gemini",
+  "provider": "configured_provider",
   "message": "smoke test"
 }
 PROMPT;

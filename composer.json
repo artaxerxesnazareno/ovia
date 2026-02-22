@@ -1,86 +1,210 @@
 {
-    "$schema": "https://getcomposer.org/schema.json",
-    "name": "laravel/react-starter-kit",
-    "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
-    "keywords": [
-        "laravel",
-        "framework"
-    ],
-    "license": "MIT",
-    "require": {
-        "php": "^8.2",
-        "inertiajs/inertia-laravel": "^2.0",
-        "laravel/framework": "^12.0",
-        "laravel/tinker": "^2.10.1",
-        "tightenco/ziggy": "^2.4"
-    },
-    "require-dev": {
-        "fakerphp/faker": "^1.23",
-        "laravel/pail": "^1.2.2",
-        "laravel/pint": "^1.18",
-        "laravel/sail": "^1.41",
-        "mockery/mockery": "^1.6",
-        "nunomaduro/collision": "^8.6",
-        "pestphp/pest": "^3.8",
-        "pestphp/pest-plugin-laravel": "^3.2"
-    },
-    "autoload": {
-        "psr-4": {
-            "App\\": "app/",
-            "Database\\Factories\\": "database/factories/",
-            "Database\\Seeders\\": "database/seeders/"
-        }
-    },
-    "autoload-dev": {
-        "psr-4": {
-            "Tests\\": "tests/"
-        }
-    },
-    "scripts": {
-        "post-autoload-dump": [
-            "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
-            "@php artisan package:discover --ansi"
+    "profile_analysis": {
+        "summary": "O estudante, com 13 anos e residente em Luanda, demonstra um baixo interesse em \u00e1reas tradicionalmente ligadas \u00e0 matem\u00e1tica e tecnologia, conforme suas respostas objetivas. H\u00e1 uma leve curiosidade sobre o funcionamento interno de aparelhos, mas n\u00e3o o suficiente para indicar uma paix\u00e3o por engenharia ou computa\u00e7\u00e3o. A aus\u00eancia de respostas abertas limita uma an\u00e1lise mais profunda de seus interesses e motiva\u00e7\u00f5es intr\u00ednsecas, sugerindo que o estudante pode ainda estar em fase de descoberta vocacional ou n\u00e3o se identifica com as \u00e1reas apresentadas nas perguntas.",
+        "personality_type": "Explorador Cauteloso",
+        "strengths": [
+            "Curiosidade incipiente (demonstrada pelo interesse em 'desmontar aparelhos')",
+            "Abertura para novas experi\u00eancias (impl\u00edcita pela idade e fase de descoberta)",
+            "Potencial para desenvolvimento em \u00e1reas n\u00e3o-tecnol\u00f3gicas\/matem\u00e1ticas"
         ],
-        "post-update-cmd": [
-            "@php artisan vendor:publish --tag=laravel-assets --ansi --force"
+        "areas_to_develop": [
+            "Identifica\u00e7\u00e3o de interesses profissionais claros",
+            "Desenvolvimento de habilidades anal\u00edticas e de resolu\u00e7\u00e3o de problemas (se aplic\u00e1vel a futuras escolhas)",
+            "Explora\u00e7\u00e3o de diversas \u00e1reas do conhecimento para descobrir paix\u00f5es"
         ],
-        "post-root-package-install": [
-            "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
-        ],
-        "post-create-project-cmd": [
-            "@php artisan key:generate --ansi",
-            "@php -r \"file_exists('database/database.sqlite') || touch('database/database.sqlite');\"",
-            "@php artisan migrate --graceful --ansi"
-        ],
-        "dev": [
-            "Composer\\Config::disableProcessTimeout",
-            "npx concurrently -c \"#93c5fd,#c4b5fd,#fdba74\" \"php artisan serve\" \"php artisan queue:listen --tries=1\" \"npm run dev\" --names='server,queue,vite'"
-        ],
-        "dev:ssr": [
-            "npm run build:ssr",
-            "Composer\\Config::disableProcessTimeout",
-            "npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74\" \"php artisan serve\" \"php artisan queue:listen --tries=1\" \"php artisan pail --timeout=0\" \"php artisan inertia:start-ssr\" --names=server,queue,logs,ssr --kill-others"
-        ],
-        "test": [
-            "@php artisan config:clear --ansi",
-            "@php artisan test"
+        "career_values": [
+            "Descoberta",
+            "Aprendizagem",
+            "Crescimento pessoal"
         ]
     },
-    "extra": {
-        "laravel": {
-            "dont-discover": []
-        }
+    "course_recommendation": {
+        "course_name": "Licenciatura em Psicologia",
+        "rank": 1,
+        "compatibility_score": 6.5,
+        "justification": "Dada a baixa pontua\u00e7\u00e3o em \u00e1reas exatas e tecnol\u00f3gicas, a Psicologia oferece um caminho focado no entendimento humano e social, que pode ser mais alinhado com um perfil que ainda n\u00e3o demonstrou inclina\u00e7\u00e3o para o racioc\u00ednio l\u00f3gico-matem\u00e1tico ou tecnol\u00f3gico. A curiosidade em 'como as coisas funcionam' pode ser redirecionada para 'como as pessoas funcionam'.",
+        "student_strengths_for_course": [
+            "Potencial para desenvolver empatia e habilidades interpessoais",
+            "Curiosidade sobre o comportamento humano (inferida pela aus\u00eancia de interesse em outras \u00e1reas)",
+            "Capacidade de observa\u00e7\u00e3o (\u00fatil para entender din\u00e2micas sociais)"
+        ],
+        "potential_challenges": [
+            "Necessidade de desenvolver habilidades de pesquisa e an\u00e1lise de dados",
+            "Exig\u00eancia de leitura e escrita acad\u00eamica intensiva",
+            "Lidar com a complexidade da mente humana e quest\u00f5es emocionais"
+        ],
+        "career_paths": [
+            {
+                "title": "Psic\u00f3logo Cl\u00ednico",
+                "description": "Diagnostica e trata dist\u00farbios mentais e emocionais, oferecendo terapia individual ou em grupo.",
+                "average_salary_range": "200.000 Kz - 500.000 Kz\/m\u00eas",
+                "market_demand": "M\u00e9dia a Alta, crescente em Angola devido \u00e0 maior conscientiza\u00e7\u00e3o sobre sa\u00fade mental.",
+                "key_skills": [
+                    "Empatia",
+                    "Escuta ativa",
+                    "An\u00e1lise comportamental",
+                    "\u00c9tica profissional"
+                ],
+                "growth_potential": "Alto, com especializa\u00e7\u00f5es e experi\u00eancia."
+            },
+            {
+                "title": "Psic\u00f3logo Organizacional",
+                "description": "Atua em empresas, otimizando o ambiente de trabalho, recrutamento, sele\u00e7\u00e3o e desenvolvimento de equipes.",
+                "average_salary_range": "250.000 Kz - 600.000 Kz\/m\u00eas",
+                "market_demand": "M\u00e9dia, com potencial de crescimento em grandes empresas e multinacionais em Angola.",
+                "key_skills": [
+                    "Gest\u00e3o de pessoas",
+                    "Avalia\u00e7\u00e3o de desempenho",
+                    "Comunica\u00e7\u00e3o",
+                    "Resolu\u00e7\u00e3o de conflitos"
+                ],
+                "growth_potential": "M\u00e9dio a Alto, com a expans\u00e3o do setor corporativo."
+            },
+            {
+                "title": "Psic\u00f3logo Educacional",
+                "description": "Trabalha em escolas, auxiliando no desenvolvimento de alunos, na resolu\u00e7\u00e3o de problemas de aprendizagem e no aconselhamento.",
+                "average_salary_range": "180.000 Kz - 400.000 Kz\/m\u00eas",
+                "market_demand": "M\u00e9dia, especialmente em escolas privadas e institui\u00e7\u00f5es de ensino superior em Luanda.",
+                "key_skills": [
+                    "Pedagogia",
+                    "Aconselhamento",
+                    "Desenvolvimento infantil\/adolescente",
+                    "Media\u00e7\u00e3o"
+                ],
+                "growth_potential": "M\u00e9dio, com oportunidades em consultoria e projetos sociais."
+            }
+        ]
     },
-    "config": {
-        "optimize-autoloader": true,
-        "preferred-install": "dist",
-        "sort-packages": true,
-        "allow-plugins": {
-            "pestphp/pest-plugin": true,
-            "php-http/discovery": true
-        }
+    "roadmap": {
+        "short_term": [
+            {
+                "goal": "Explorar interesses diversos",
+                "timeframe": "Pr\u00f3ximos 6-12 meses",
+                "actions": [
+                    "Participar de clubes escolares (leitura, debate, artes)",
+                    "Visitar feiras de profiss\u00f5es e universidades",
+                    "Conversar com profissionais de diferentes \u00e1reas",
+                    "Assistir a document\u00e1rios e ler sobre temas variados"
+                ],
+                "resources": [
+                    "Escolares",
+                    "Internet",
+                    "Mentores (familiares, professores)",
+                    "Bibliotecas"
+                ],
+                "estimated_hours_week": "3-5 horas"
+            },
+            {
+                "goal": "Desenvolver habilidades de comunica\u00e7\u00e3o e leitura",
+                "timeframe": "Pr\u00f3ximos 12-18 meses",
+                "actions": [
+                    "Ler livros de fic\u00e7\u00e3o e n\u00e3o-fic\u00e7\u00e3o regularmente",
+                    "Participar de debates e apresenta\u00e7\u00f5es em sala de aula",
+                    "Escrever pequenos textos e di\u00e1rios",
+                    "Praticar a escuta ativa em conversas"
+                ],
+                "resources": [
+                    "Livros (biblioteca, online)",
+                    "Grupos de estudo",
+                    "Professores de portugu\u00eas",
+                    "Plataformas de escrita criativa"
+                ],
+                "estimated_hours_week": "4-6 horas"
+            }
+        ],
+        "medium_term": [
+            {
+                "goal": "Aprofundar-se em \u00e1reas de interesse emergentes",
+                "timeframe": "1-3 anos",
+                "actions": [
+                    "Fazer cursos online introdut\u00f3rios em Psicologia, RH ou Marketing",
+                    "Participar de workshops e palestras sobre temas de interesse",
+                    "Realizar projetos pessoais relacionados a essas \u00e1reas",
+                    "Buscar est\u00e1gios de ver\u00e3o ou voluntariado (se aplic\u00e1vel \u00e0 idade)"
+                ],
+                "resources": [
+                    "Coursera, edX, Khan Academy",
+                    "Eventos locais",
+                    "Organiza\u00e7\u00f5es n\u00e3o-governamentais",
+                    "Profissionais da \u00e1rea"
+                ],
+                "estimated_hours_week": "5-8 horas"
+            },
+            {
+                "goal": "Melhorar o pensamento cr\u00edtico e anal\u00edtico",
+                "timeframe": "1-3 anos",
+                "actions": [
+                    "Resolver quebra-cabe\u00e7as e jogos de l\u00f3gica",
+                    "Participar de discuss\u00f5es sobre not\u00edcias e eventos atuais",
+                    "Aprender a argumentar e defender pontos de vista de forma estruturada",
+                    "Analisar criticamente informa\u00e7\u00f5es de diferentes fontes"
+                ],
+                "resources": [
+                    "Jogos de tabuleiro",
+                    "Notici\u00e1rios (TV, r\u00e1dio, online)",
+                    "Grupos de debate",
+                    "Livros sobre l\u00f3gica e filosofia"
+                ],
+                "estimated_hours_week": "3-5 horas"
+            }
+        ],
+        "long_term": [
+            {
+                "goal": "Definir uma \u00e1rea de estudo superior",
+                "timeframe": "3-5 anos (pr\u00e9-universidade)",
+                "actions": [
+                    "Pesquisar curr\u00edculos de cursos universit\u00e1rios",
+                    "Visitar universidades e conversar com coordenadores",
+                    "Fazer testes vocacionais mais aprofundados",
+                    "Preparar-se para exames de admiss\u00e3o com foco na \u00e1rea escolhida"
+                ],
+                "resources": [
+                    "Guias universit\u00e1rios",
+                    "Orientadores vocacionais",
+                    "Plataformas de prepara\u00e7\u00e3o para exames",
+                    "Ex-alunos"
+                ],
+                "estimated_hours_week": "6-10 horas"
+            },
+            {
+                "goal": "Desenvolver uma rede de contatos profissionais",
+                "timeframe": "5+ anos (durante a universidade)",
+                "actions": [
+                    "Participar de eventos da ind\u00fastria",
+                    "Conectar-se com professores e colegas",
+                    "Buscar mentores na \u00e1rea de atua\u00e7\u00e3o",
+                    "Utilizar plataformas como LinkedIn"
+                ],
+                "resources": [
+                    "Eventos universit\u00e1rios",
+                    "Associa\u00e7\u00f5es profissionais",
+                    "Redes sociais profissionais",
+                    "Professores"
+                ],
+                "estimated_hours_week": "2-4 horas"
+            }
+        ],
+        "certifications_to_consider": [
+            "Certifica\u00e7\u00e3o em Primeiros Socorros Psicol\u00f3gicos (para Psicologia)",
+            "Certifica\u00e7\u00e3o em Recrutamento e Sele\u00e7\u00e3o (para RH)",
+            "Certifica\u00e7\u00e3o em Marketing Digital (Google Ads, Facebook Blueprint)"
+        ],
+        "books_recommended": [
+            "'Intelig\u00eancia Emocional' de Daniel Goleman",
+            "'Como Fazer Amigos e Influenciar Pessoas' de Dale Carnegie",
+            "'O Poder do H\u00e1bito' de Charles Duhigg",
+            "'Marketing 4.0' de Philip Kotler"
+        ],
+        "communities_to_join": [
+            "Clubes de Leitura e Debate na escola",
+            "Grupos de Jovens Volunt\u00e1rios em Luanda",
+            "Associa\u00e7\u00f5es Estudantis (futuramente na universidade)",
+            "F\u00f3runs online sobre Psicologia, RH ou Marketing"
+        ]
     },
-    "minimum-stability": "stable",
-    "prefer-stable": true
+    "additional_advice": {
+        "immediate_next_steps": "O passo mais importante agora \u00e9 a explora\u00e7\u00e3o ativa. Incentive o estudante a se expor a uma ampla gama de atividades e conhecimentos, sem press\u00e3o para escolher. Aos 13 anos, o foco deve ser em descobrir o que o intriga e o que o faz sentir-se engajado, seja atrav\u00e9s de hobbies, leituras ou conversas com adultos em diferentes profiss\u00f5es. A curiosidade em 'desmontar aparelhos' \u00e9 um bom ponto de partida para explorar o 'como' das coisas, mesmo que n\u00e3o seja necessariamente tecnol\u00f3gico.",
+        "long_term_vision": "A vis\u00e3o de longo prazo para este estudante \u00e9 construir uma carreira que o satisfa\u00e7a e contribua para a sociedade angolana, aproveitando suas habilidades interpessoais e curiosidade natural. Mesmo que as \u00e1reas iniciais n\u00e3o sejam exatas, h\u00e1 um vasto campo de atua\u00e7\u00e3o em ci\u00eancias sociais e humanas que s\u00e3o cruciais para o desenvolvimento do pa\u00eds. O objetivo \u00e9 que ele se torne um profissional adapt\u00e1vel, com pensamento cr\u00edtico e capaz de inovar em sua \u00e1rea escolhida.",
+        "words_of_encouragement": "Caro estudante, voc\u00ea est\u00e1 em uma fase emocionante de descobertas! \u00c9 completamente normal n\u00e3o ter todas as respostas agora. O mais importante \u00e9 manter a mente aberta, explorar o mundo ao seu redor com curiosidade e n\u00e3o ter medo de experimentar coisas novas. Cada experi\u00eancia, cada livro lido, cada conversa, \u00e9 um passo em dire\u00e7\u00e3o a descobrir o seu pr\u00f3prio caminho. Acredite no seu potencial e no processo de autoconhecimento. O futuro \u00e9 seu para construir, e Luanda precisa de jovens talentosos e engajados como voc\u00ea!"
+    }
 }

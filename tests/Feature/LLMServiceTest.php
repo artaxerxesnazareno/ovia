@@ -352,3 +352,177 @@ test('llm service retries when gemini response is truncated by max tokens', func
         })
         ->once();
 });
+
+test('llm service decodes deepseek json response', function () {
+    config()->set('llm.provider', 'deepseek');
+    config()->set('llm.deepseek.api_key', 'test-deepseek-key');
+    config()->set('llm.deepseek.model', 'deepseek-chat');
+    config()->set('llm.deepseek.base_url', 'https://api.deepseek.com/v1');
+    config()->set('llm.timeout', 10);
+    config()->set('llm.retry_attempts', 1);
+
+    Http::fake([
+        'https://api.deepseek.com/*' => Http::response([
+            'choices' => [
+                [
+                    'message' => [
+                        'content' => '{"status":"ok","provider":"deepseek"}',
+                    ],
+                ],
+            ],
+        ], 200),
+    ]);
+
+    $service = app(LLMService::class);
+    $result = $service->generateJson('retorne JSON');
+
+    expect($result)->toBe([
+        'status' => 'ok',
+        'provider' => 'deepseek',
+    ]);
+});
+
+test('llm service sends deepseek json mode and max tokens when force json is enabled', function () {
+    config()->set('llm.provider', 'deepseek');
+    config()->set('llm.deepseek.api_key', 'test-deepseek-key');
+    config()->set('llm.deepseek.model', 'deepseek-chat');
+    config()->set('llm.deepseek.base_url', 'https://api.deepseek.com/v1');
+    config()->set('llm.deepseek.max_output_tokens', 1200);
+    config()->set('llm.deepseek.json_max_output_tokens', 3210);
+    config()->set('llm.timeout', 10);
+    config()->set('llm.retry_attempts', 1);
+
+    Http::fake([
+        'https://api.deepseek.com/*' => Http::response([
+            'choices' => [
+                [
+                    'message' => [
+                        'content' => '{"status":"ok","provider":"deepseek"}',
+                    ],
+                ],
+            ],
+        ], 200),
+    ]);
+
+    $service = app(LLMService::class);
+    $result = $service->generateJson('retorne JSON');
+
+    expect($result)->toBe([
+        'status' => 'ok',
+        'provider' => 'deepseek',
+    ]);
+
+    Http::assertSent(function ($request) {
+        $payload = json_decode($request->body(), true);
+
+        return $request->url() === 'https://api.deepseek.com/v1/chat/completions'
+            && $request->hasHeader('Authorization', 'Bearer test-deepseek-key')
+            && ($payload['response_format']['type'] ?? null) === 'json_object'
+            && ($payload['max_tokens'] ?? null) === 3210;
+    });
+});
+
+test('llm service logs retry warning when deepseek request fails before succeeding', function () {
+    Log::spy();
+
+    config()->set('llm.provider', 'deepseek');
+    config()->set('llm.deepseek.api_key', 'test-deepseek-key');
+    config()->set('llm.deepseek.model', 'deepseek-chat');
+    config()->set('llm.deepseek.base_url', 'https://api.deepseek.com/v1');
+    config()->set('llm.timeout', 10);
+    config()->set('llm.retry_attempts', 2);
+
+    Http::fakeSequence()
+        ->pushStatus(429)
+        ->push([
+            'choices' => [
+                [
+                    'message' => [
+                        'content' => '{"status":"ok","provider":"deepseek"}',
+                    ],
+                ],
+            ],
+        ], 200);
+
+    $service = app(LLMService::class);
+    $result = $service->generateJson('retorne JSON');
+
+    expect($result)->toBe([
+        'status' => 'ok',
+        'provider' => 'deepseek',
+    ]);
+
+    Log::shouldHaveReceived('warning')
+        ->withArgs(function (string $message, array $context) {
+            return $message === 'llm.deepseek.request.retry'
+                && ($context['provider'] ?? null) === 'deepseek'
+                && ($context['model'] ?? null) === 'deepseek-chat'
+                && ($context['attempt'] ?? null) === 1
+                && ($context['attempts'] ?? null) === 2
+                && ($context['will_retry'] ?? null) === true
+                && is_string($context['error'] ?? null);
+        })
+        ->once();
+});
+
+test('llm service logs decode failure metadata for deepseek provider', function () {
+    Log::spy();
+
+    config()->set('llm.provider', 'deepseek');
+    config()->set('llm.deepseek.api_key', 'test-deepseek-key');
+    config()->set('llm.deepseek.model', 'deepseek-chat');
+    config()->set('llm.deepseek.base_url', 'https://api.deepseek.com/v1');
+    config()->set('llm.timeout', 10);
+    config()->set('llm.retry_attempts', 1);
+
+    Http::fake([
+        'https://api.deepseek.com/*' => Http::response([
+            'choices' => [
+                [
+                    'message' => [
+                        'content' => "texto antes {\n\"profile_analysis\":\n",
+                    ],
+                ],
+            ],
+        ], 200),
+    ]);
+
+    $service = app(LLMService::class);
+
+    expect(fn () => $service->generateJson('retorne JSON'))
+        ->toThrow(RuntimeException::class, 'Resposta do LLM nao veio em JSON valido.');
+
+    Log::shouldHaveReceived('error')
+        ->withArgs(function (string $message, array $context) {
+            return $message === 'llm.json.decode_failed'
+                && ($context['provider'] ?? null) === 'deepseek'
+                && ($context['model'] ?? null) === 'deepseek-chat'
+                && is_string($context['provider_http_body'] ?? null)
+                && strlen($context['provider_http_body']) > 0
+                && is_string($context['provider_http_body_escaped'] ?? null)
+                && strlen($context['provider_http_body_escaped']) > 0
+                && ($context['gemini_http_body'] ?? null) === null;
+        })
+        ->once();
+});
+
+test('llm service throws explicit error when deepseek key is not configured', function () {
+    config()->set('llm.provider', 'deepseek');
+    config()->set('llm.deepseek.api_key', '');
+    config()->set('llm.deepseek.base_url', 'https://api.deepseek.com/v1');
+    config()->set('llm.deepseek.model', 'deepseek-chat');
+
+    $service = app(LLMService::class);
+
+    expect(fn () => $service->generateText('teste'))
+        ->toThrow(RuntimeException::class, 'DEEPSEEK_API_KEY nao configurada.');
+});
+
+test('llm service throws explicit error when llm provider is invalid', function () {
+    config()->set('llm.provider', 'invalid-provider');
+
+    $service = app(LLMService::class);
+
+    expect(fn () => $service->generateText('teste'))
+        ->toThrow(RuntimeException::class, "Provider 'invalid-provider' nao suportado. Defina LLM_PROVIDER=gemini ou LLM_PROVIDER=deepseek.");
+});

@@ -220,7 +220,7 @@ test('submit returns conflict with processing redirect when assessment is alread
     Queue::assertNothingPushed();
 });
 
-test('submit still returns redirect url for processing route and dispatches queued job outside local', function () {
+test('submit still returns redirect url for processing route and dispatches queued job with async connection', function () {
     Queue::fake();
     Log::spy();
     config()->set('queue.default', 'database');
@@ -295,7 +295,7 @@ test('submit still returns redirect url for processing route and dispatches queu
         ->once();
 });
 
-test('submit dispatches processing after response in local environment with async queue', function () {
+test('submit dispatches processing after response in local environment with async queue connection', function () {
     Bus::fake();
     Log::spy();
     config()->set('queue.default', 'database');
@@ -359,6 +359,63 @@ test('submit dispatches processing after response in local environment with asyn
                 && ($context['user_id'] ?? null) === $user->id
                 && ($context['dispatch_mode'] ?? null) === 'after_response'
                 && ($context['queue_connection'] ?? null) === 'database';
+        })
+        ->once();
+});
+
+test('submit dispatches processing after response when queue connection is sync', function () {
+    Bus::fake();
+    Log::spy();
+    config()->set('queue.default', 'sync');
+
+    $user = User::factory()->create();
+
+    $question = Question::create([
+        'category' => 'interests',
+        'question_text' => 'Questao obrigatoria',
+        'question_type' => 'likert',
+        'weight' => 1,
+        'order' => 1,
+        'is_active' => true,
+    ]);
+
+    $assessment = Assessment::create([
+        'user_id' => $user->id,
+        'status' => 'pending',
+        'started_at' => now(),
+    ]);
+
+    $response = $this->actingAs($user)->postJson(
+        route('assessment.submit', ['assessmentId' => $assessment->id]),
+        [
+            'responses' => [
+                [
+                    'question_id' => $question->id,
+                    'response_value' => 5,
+                    'response_text' => null,
+                ],
+            ],
+        ],
+    );
+
+    $response->assertOk();
+    $response->assertJsonPath('success', true);
+    $response->assertJsonPath(
+        'redirect_url',
+        route('assessment.processing', ['assessmentId' => $assessment->id]),
+    );
+
+    Bus::assertDispatchedAfterResponse(ProcessAssessmentJob::class, function (ProcessAssessmentJob $job) use ($assessment) {
+        return $job->assessmentId === $assessment->id;
+    });
+
+    Log::shouldHaveReceived('info')
+        ->withArgs(function (string $message, array $context) use ($assessment, $user) {
+            return $message === 'assessment.submit.dispatched'
+                && ($context['assessment_id'] ?? null) === $assessment->id
+                && ($context['user_id'] ?? null) === $user->id
+                && ($context['dispatch_mode'] ?? null) === 'after_response'
+                && ($context['queue_connection'] ?? null) === 'sync';
         })
         ->once();
 });
