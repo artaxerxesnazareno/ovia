@@ -171,9 +171,9 @@
 - **Critério de Aceitação**: Respostas persistidas corretamente no BD
 
 **US2.5 - Página de "Processando"** (2 SP)
-- [ ] View: Tela de loading após submissão
-- [ ] Animação de processamento
-- [ ] Mensagens encorajadoras
+- [x] View: Tela de loading após submissão
+- [x] Animação de processamento
+- [x] Mensagens encorajadoras
 - **Critério de Aceitação**: UX agradável durante espera
 
 ### 📝 Tarefas Diárias

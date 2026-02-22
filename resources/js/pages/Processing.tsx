@@ -40,6 +40,13 @@ const encouragingMessages = [
     'Cada resposta ajuda a IA a montar recomendacoes mais precisas para voce.',
     'Seu resultado ja esta quase pronto. Obrigado por aguardar.',
 ];
+const DEFAULT_FAILED_MESSAGE =
+    'Nao foi possivel concluir o processamento agora. Tente novamente.';
+
+const resolveFailedMessage = (message?: string | null): string => {
+    const normalized = message?.trim();
+    return normalized && normalized.length > 0 ? normalized : DEFAULT_FAILED_MESSAGE;
+};
 
 const getProcessingSteps = (totalQuestions: number): ProcessingStep[] => [
     {
@@ -79,17 +86,15 @@ export default function Processing({ assessment, ux }: ProcessingProps) {
     const [elapsedTime, setElapsedTime] = useState(0);
     const [messageIndex, setMessageIndex] = useState(0);
     const [failedMessage, setFailedMessage] = useState<string | null>(
-        assessment.status === 'failed'
-            ? 'Nao foi possivel concluir o processamento agora. Tente novamente.'
-            : null,
+        assessment.status === 'failed' ? resolveFailedMessage(null) : null,
     );
     const [isDelayed, setIsDelayed] = useState(false);
 
     useEffect(() => {
         if (assessment.status === 'completed') {
-            router.visit('/app-dashboard');
+            router.visit(`/assessment/${assessment.id}/results`);
         }
-    }, [assessment.status]);
+    }, [assessment.id, assessment.status]);
 
     useEffect(() => {
         if (failedMessage) {
@@ -183,14 +188,12 @@ export default function Processing({ assessment, ux }: ProcessingProps) {
                 }
 
                 if (data.status === 'completed') {
-                    router.visit(data.redirect_url || '/app-dashboard');
+                    router.visit(data.redirect_url || `/assessment/${assessment.id}/results`);
                     return;
                 }
 
                 if (data.status === 'failed') {
-                    setFailedMessage(
-                        data.message || 'Nao foi possivel concluir o processamento agora. Tente novamente.',
-                    );
+                    setFailedMessage(resolveFailedMessage(data.message));
                 }
             } catch {
                 // Mantemos o polling em falhas transientes de rede.

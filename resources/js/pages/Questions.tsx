@@ -61,6 +61,47 @@ const getCsrfToken = (): string => {
     return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
 };
 
+const setCsrfToken = (token: string): void => {
+    const meta = document.querySelector('meta[name="csrf-token"]');
+    if (meta) {
+        meta.setAttribute('content', token);
+    }
+};
+
+const refreshCsrfToken = async (): Promise<string | null> => {
+    try {
+        const response = await fetch('/csrf-token', {
+            method: 'GET',
+            headers: {
+                Accept: 'application/json',
+            },
+            credentials: 'same-origin',
+        });
+
+        if (!response.ok) {
+            return null;
+        }
+
+        const isJson = (response.headers.get('content-type') || '').includes('application/json');
+        if (!isJson) {
+            return null;
+        }
+
+        const data = await response.json();
+        const token = typeof data?.csrf_token === 'string' ? data.csrf_token : null;
+
+        if (!token) {
+            return null;
+        }
+
+        setCsrfToken(token);
+
+        return token;
+    } catch {
+        return null;
+    }
+};
+
 export default function Questions({
                                       assessment,
                                       questions,
@@ -111,16 +152,50 @@ export default function Questions({
     const answeredQuestions = Object.keys({ ...responses, ...textResponses }).length;
     const progress = (answeredQuestions / totalQuestions) * 100;
 
-    const autoSave = useCallback(async () => {
-        const csrfToken = getCsrfToken();
+    const postWithCsrfRetry = useCallback(async (url: string, payload: Record<string, unknown>): Promise<Response> => {
+        const sendRequest = async (csrfToken: string): Promise<Response> =>
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify({
+                    ...payload,
+                    _token: csrfToken,
+                }),
+            });
+
+        let csrfToken = getCsrfToken();
         if (!csrfToken) {
-            const errorMessage = 'Token CSRF nao encontrado. Atualize a pagina e tente novamente.';
-            setAutoSaveStatus('error');
-            setAutoSaveError(errorMessage);
-            toast.error(errorMessage);
-            return;
+            const refreshed = await refreshCsrfToken();
+            if (!refreshed) {
+                throw new Error('Token CSRF nao encontrado. Atualize a pagina e tente novamente.');
+            }
+
+            csrfToken = refreshed;
         }
 
+        let response = await sendRequest(csrfToken);
+
+        if (response.status !== 419) {
+            return response;
+        }
+
+        const refreshed = await refreshCsrfToken();
+        if (!refreshed) {
+            return response;
+        }
+
+        response = await sendRequest(refreshed);
+
+        return response;
+    }, []);
+
+    const autoSave = useCallback(async () => {
         setIsSaving(true);
         setAutoSaveStatus('saving');
         setAutoSaveError(null);
@@ -132,15 +207,8 @@ export default function Questions({
                 response_text: typeof value === 'string' ? value : null,
             }));
 
-            const res = await fetch(`/assessment/${assessment.id}/save`, {
-                method: 'POST',
-                headers: {
-                    Accept: 'application/json',
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': csrfToken,
-                },
-                credentials: 'same-origin',
-                body: JSON.stringify({ responses: responsesArray }),
+            const res = await postWithCsrfRetry(`/assessment/${assessment.id}/save`, {
+                responses: responsesArray,
             });
 
             const isJson = (res.headers.get('content-type') || '').includes('application/json');
@@ -167,7 +235,7 @@ export default function Questions({
         } finally {
             setIsSaving(false);
         }
-    }, [responses, textResponses, assessment.id]);
+    }, [responses, textResponses, assessment.id, postWithCsrfRetry]);
 
     // Auto-save com debounce para evitar perda ao trocar de tela/seção.
     useEffect(() => {
@@ -226,12 +294,6 @@ export default function Questions({
             return;
         }
 
-        const csrfToken = getCsrfToken();
-        if (!csrfToken) {
-            toast.error('Token CSRF nao encontrado. Atualize a pagina e tente novamente.');
-            return;
-        }
-
         setIsSaving(true);
         try {
             const responsesArray = Object.entries({ ...responses, ...textResponses }).map(([questionId, value]) => ({
@@ -240,15 +302,8 @@ export default function Questions({
                 response_text: typeof value === 'string' ? value : null,
             }));
 
-            const res = await fetch(`/assessment/${assessment.id}/submit`, {
-                method: 'POST',
-                headers: {
-                    Accept: 'application/json',
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': csrfToken,
-                },
-                credentials: 'same-origin',
-                body: JSON.stringify({ responses: responsesArray }),
+            const res = await postWithCsrfRetry(`/assessment/${assessment.id}/submit`, {
+                responses: responsesArray,
             });
 
             if (res.status === 419) {
@@ -256,15 +311,27 @@ export default function Questions({
                 return;
             }
 
-            const data = await res.json();
+            const isJson = (res.headers.get('content-type') || '').includes('application/json');
+            const data = isJson ? await res.json() : null;
 
-            if (data.success) {
-                toast.success('Avaliação enviada com sucesso!');
+            if (data?.redirect_url) {
+                if (data.success) {
+                    toast.success(data.message || 'Avaliacao enviada com sucesso!');
+                } else {
+                    toast.error(data.message || 'Nao foi possivel enviar esta avaliacao.');
+                }
+
                 router.visit(data.redirect_url);
-            } else {
-                toast.error(data.message || 'Erro ao enviar avaliação');
+                return;
             }
-        } catch (error) {
+
+            if (data?.success) {
+                toast.success(data.message || 'Avaliacao enviada com sucesso!');
+                return;
+            }
+
+            toast.error(data?.message || `Erro ao enviar avaliacao (HTTP ${res.status})`);
+        } catch {
             toast.error('Erro ao enviar avaliação. Tente novamente.');
         } finally {
             setIsSaving(false);
