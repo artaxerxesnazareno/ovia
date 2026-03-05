@@ -1,112 +1,115 @@
-
-import { useState } from 'react';
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
+import Assessment from '@/components/Assessment';
+import Chatbot from '@/components/Chatbot';
+import Dashboard, { type DashboardData } from '@/components/Dashboard';
+import Features from '@/components/Features';
 import Header from '@/components/Header';
 import Hero from '@/components/Hero';
-import Features from '@/components/Features';
-import Chatbot from '@/components/Chatbot';
-import Dashboard from '@/components/Dashboard';
-import Assessment from '@/components/Assessment';
+import { useState } from 'react';
 
-
-import { router, usePage } from '@inertiajs/react';
 import { SharedData } from '@/types';
+import { router, usePage } from '@inertiajs/react';
 
-const Index = ({ initialView = 'home' }: { initialView?: string }) => {
-  const { auth } = usePage<SharedData>().props;
-  const [currentView, setCurrentView] = useState(initialView);
-  const [userProgress, setUserProgress] = useState(0);
+const Index = ({ initialView = 'home', dashboardData }: { initialView?: string; dashboardData?: DashboardData }) => {
+    const { auth } = usePage<SharedData>().props;
+    const [currentView, setCurrentView] = useState(initialView);
+    const [userProgress, setUserProgress] = useState(0);
 
-  const handleNavigate = (view: string) => {
-    if (view === 'assessment') {
-      router.visit('/assessment/start');
-      return;
-    }
+    const handleNavigate = (view: string) => {
+        if (view === 'assessment') {
+            router.visit('/assessment/start');
+            return;
+        }
 
-    setCurrentView(view);
-  };
+        if (view === 'dashboard' && auth.user) {
+            router.visit('/app-dashboard');
+            return;
+        }
 
-  const renderCurrentView = () => {
-    switch (currentView) {
-      case 'dashboard':
-        return <Dashboard onStartAssessment={() => router.visit('/assessment/start')} />;
-      case 'assessment':
-        return <Assessment onComplete={() => {
-          setUserProgress(100);
-          setCurrentView('dashboard');
-        }} />;
-      default:
-        return (
-          <>
-            <Hero onGetStarted={() => setCurrentView('dashboard')} />
-            <Features />
-          </>
-        );
-    }
-  };
+        setCurrentView(view);
+    };
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50">
-      <Header
-        currentView={currentView}
-        onNavigate={handleNavigate}
-        userProgress={userProgress}
-        user={auth.user}
-      />
+    const renderCurrentView = () => {
+        switch (currentView) {
+            case 'dashboard':
+                return <Dashboard onStartAssessment={() => router.visit('/assessment/start')} data={dashboardData} />;
+            case 'assessment':
+                return (
+                    <Assessment
+                        onComplete={() => {
+                            setUserProgress(100);
+                            router.visit('/app-dashboard');
+                        }}
+                    />
+                );
+            default:
+                return (
+                    <>
+                        <Hero
+                            onGetStarted={() => {
+                                if (auth.user) {
+                                    router.visit('/app-dashboard');
+                                    return;
+                                }
 
-      <main className="relative">
-        {renderCurrentView()}
-      </main>
+                                setCurrentView('dashboard');
+                            }}
+                        />
+                        <Features />
+                    </>
+                );
+        }
+    };
 
-      <Chatbot />
+    return (
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50">
+            <Header currentView={currentView} onNavigate={handleNavigate} userProgress={userProgress} user={auth.user} />
 
-      <footer className="bg-slate-900 text-white py-12 mt-20">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div>
-              <h3 className="text-2xl font-bold text-gradient mb-4">OVIA</h3>
-              <p className="text-slate-300">
-                Plataforma de orientação vocacional baseada em inteligência artificial.
-              </p>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Recursos</h4>
-              <ul className="space-y-2 text-slate-300">
-                <li>Testes Vocacionais</li>
-                <li>Análise de Perfil</li>
-                <li>Recomendações IA</li>
-                <li>Orientação Especializada</li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Suporte</h4>
-              <ul className="space-y-2 text-slate-300">
-                <li>Central de Ajuda</li>
-                <li>FAQ</li>
-                <li>Contato</li>
-                <li>Documentação</li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Legal</h4>
-              <ul className="space-y-2 text-slate-300">
-                <li>Termos de Uso</li>
-                <li>Política de Privacidade</li>
-                <li>LGPD</li>
-                <li>Cookies</li>
-              </ul>
-            </div>
-          </div>
-          <div className="border-t border-slate-700 mt-8 pt-8 text-center text-slate-400">
-            <p>&copy; 2026 OVIA. Todos os direitos reservados.</p>
-          </div>
+            <main className="relative">{renderCurrentView()}</main>
+
+            <Chatbot />
+
+            <footer className="mt-20 bg-slate-900 py-12 text-white">
+                <div className="container mx-auto px-4">
+                    <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
+                        <div>
+                            <h3 className="text-gradient mb-4 text-2xl font-bold">OVIA</h3>
+                            <p className="text-slate-300">Plataforma de orientação vocacional baseada em inteligência artificial.</p>
+                        </div>
+                        <div>
+                            <h4 className="mb-4 font-semibold">Recursos</h4>
+                            <ul className="space-y-2 text-slate-300">
+                                <li>Testes Vocacionais</li>
+                                <li>Análise de Perfil</li>
+                                <li>Recomendações IA</li>
+                                <li>Orientação Especializada</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 className="mb-4 font-semibold">Suporte</h4>
+                            <ul className="space-y-2 text-slate-300">
+                                <li>Central de Ajuda</li>
+                                <li>FAQ</li>
+                                <li>Contato</li>
+                                <li>Documentação</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 className="mb-4 font-semibold">Legal</h4>
+                            <ul className="space-y-2 text-slate-300">
+                                <li>Termos de Uso</li>
+                                <li>Política de Privacidade</li>
+                                <li>LGPD</li>
+                                <li>Cookies</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div className="mt-8 border-t border-slate-700 pt-8 text-center text-slate-400">
+                        <p>&copy; 2026 OVIA. Todos os direitos reservados.</p>
+                    </div>
+                </div>
+            </footer>
         </div>
-      </footer>
-    </div>
-  );
+    );
 };
 
 export default Index;

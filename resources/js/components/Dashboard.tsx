@@ -1,239 +1,357 @@
+import { router } from '@inertiajs/react';
+import { ArrowRight, Bell, Brain, Calculator, Check, ChevronRight, Circle, ClipboardCheck, Sparkles, Star, UserSearch } from 'lucide-react';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
+import { Button } from '@/components/ui/button';
 
-interface DashboardProps {
-  onStartAssessment: () => void;
+type AssessmentStatus = 'completed' | 'pending' | 'processing' | 'failed';
+
+interface DashboardAssessment {
+    id: number;
+    title: string;
+    completedAt?: string | null;
+    status: AssessmentStatus;
+    resultLabel?: string | null;
+    resultHint?: string | null;
+    actionLabel?: string | null;
+    actionUrl?: string | null;
 }
 
-const Dashboard = ({ onStartAssessment }: DashboardProps) => {
-  const assessments = [
-    {
-      title: "Teste de Interesses Profissionais",
-      description: "Identifique suas áreas de interesse e paixões profissionais",
-      progress: 100,
-      status: "Concluído",
-      score: 85,
-      duration: "15 min"
-    },
-    {
-      title: "Análise de Inteligências Múltiplas",
-      description: "Descubra suas diferentes formas de inteligência",
-      progress: 60,
-      status: "Em Progresso",
-      score: null,
-      duration: "20 min"
-    },
-    {
-      title: "Perfil Comportamental",
-      description: "Entenda seu estilo de trabalho e preferências",
-      progress: 0,
-      status: "Não Iniciado",
-      score: null,
-      duration: "12 min"
-    },
-    {
-      title: "Teste Gosto e Faço",
-      description: "Alinhe suas preferências com suas habilidades",
-      progress: 0,
-      status: "Não Iniciado",
-      score: null,
-      duration: "18 min"
+interface DashboardRecommendation {
+    id: number;
+    title: string;
+    description: string;
+    compatibility: number;
+    actionUrl?: string | null;
+}
+
+interface DashboardTask {
+    id: string;
+    label: string;
+    done: boolean;
+}
+
+export interface DashboardData {
+    roadmapProgress?: number;
+    currentStage?: string;
+    remainingActivities?: number;
+    assessments?: DashboardAssessment[];
+    recommendations?: DashboardRecommendation[];
+    tasks?: DashboardTask[];
+}
+
+interface DashboardProps {
+    onStartAssessment: () => void;
+    data?: DashboardData;
+}
+
+const normalizeProgress = (value: number) => Math.max(0, Math.min(100, Math.round(value)));
+
+const formatCompletedAt = (value?: string | null): string => {
+    if (!value) {
+        return '-';
     }
-  ];
 
-  const careerRecommendations = [
-    {
-      career: "Engenharia de Software",
-      match: 92,
-      salary: "R$ 8.500 - R$ 15.000",
-      growth: "Alta",
-      description: "Desenvolvimento de sistemas e aplicações"
-    },
-    {
-      career: "Cientista de Dados",
-      match: 88,
-      salary: "R$ 9.000 - R$ 18.000",
-      growth: "Muito Alta",
-      description: "Análise e interpretação de dados complexos"
-    },
-    {
-      career: "UX/UI Designer",
-      match: 82,
-      salary: "R$ 5.500 - R$ 12.000",
-      growth: "Alta",
-      description: "Design de experiências digitais"
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+        return '-';
     }
-  ];
 
-  const overallProgress = Math.round(assessments.reduce((acc, curr) => acc + curr.progress, 0) / assessments.length);
+    return new Intl.DateTimeFormat('pt-BR', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+    }).format(date);
+};
 
-  return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="space-y-8">
-        {/* Header */}
-        <div className="text-center space-y-4">
-          <h1 className="text-4xl font-bold">
-            Seu Dashboard de
-            <span className="text-gradient block">Orientação Vocacional</span>
-          </h1>
-          <p className="text-xl text-slate-600">
-            Acompanhe seu progresso e descubra suas recomendações personalizadas
-          </p>
-        </div>
+const assessmentPresentation = (status: AssessmentStatus) => {
+    if (status === 'completed') {
+        return {
+            icon: Brain,
+            wrapperClass: 'bg-blue-50 text-blue-600',
+            resultClass: 'text-emerald-600',
+        };
+    }
 
-        {/* Progress Overview */}
-        <Card className="card-gradient">
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <span>Progresso Geral</span>
-              <Badge variant={overallProgress === 100 ? "default" : "secondary"}>
-                {overallProgress}% Completo
-              </Badge>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <Progress value={overallProgress} className="h-3" />
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-                <div>
-                  <div className="text-2xl font-bold text-vocia-600">
-                    {assessments.filter(a => a.status === "Concluído").length}
-                  </div>
-                  <div className="text-sm text-slate-500">Testes Concluídos</div>
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-purple-600">
-                    {careerRecommendations.length}
-                  </div>
-                  <div className="text-sm text-slate-500">Carreiras Sugeridas</div>
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-vocia-600">
-                    {Math.max(...assessments.map(a => a.score || 0))}
-                  </div>
-                  <div className="text-sm text-slate-500">Melhor Score</div>
-                </div>
-              </div>
+    if (status === 'processing') {
+        return {
+            icon: Calculator,
+            wrapperClass: 'bg-indigo-50 text-indigo-600',
+            resultClass: 'text-indigo-600',
+        };
+    }
+
+    if (status === 'failed') {
+        return {
+            icon: Circle,
+            wrapperClass: 'bg-rose-50 text-rose-600',
+            resultClass: 'text-rose-600',
+        };
+    }
+
+    return {
+        icon: UserSearch,
+        wrapperClass: 'bg-slate-100 text-slate-500',
+        resultClass: 'text-slate-600',
+    };
+};
+
+const recommendationChipClass = (compatibility: number) => {
+    if (compatibility >= 90) return 'bg-emerald-50 text-emerald-700';
+    if (compatibility >= 80) return 'bg-blue-50 text-blue-700';
+    return 'bg-indigo-50 text-indigo-700';
+};
+
+const subtitleByStatus = (assessment: DashboardAssessment): string => {
+    if (assessment.status === 'completed') {
+        return `Concluido em ${formatCompletedAt(assessment.completedAt)}`;
+    }
+
+    if (assessment.status === 'processing') {
+        return 'Em processamento';
+    }
+
+    if (assessment.status === 'failed') {
+        return 'Falhou no processamento';
+    }
+
+    return 'Pendente';
+};
+
+const Dashboard = ({ onStartAssessment, data }: DashboardProps) => {
+    const assessments = data?.assessments ?? [];
+    const recommendations = data?.recommendations ?? [];
+    const tasks = data?.tasks ?? [];
+
+    const hasAssessments = assessments.length > 0;
+    const hasRecommendations = recommendations.length > 0;
+    const hasTasks = tasks.length > 0;
+
+    const pendingActivities = assessments.filter((assessment) => assessment.status === 'pending' || assessment.status === 'processing').length;
+
+    const roadmapProgress = normalizeProgress(data?.roadmapProgress ?? 0);
+    const currentStage = data?.currentStage ?? (hasAssessments ? 'Em andamento' : 'Nao iniciado');
+    const remainingActivities = typeof data?.remainingActivities === 'number' ? Math.max(0, data.remainingActivities) : pendingActivities;
+
+    const progressDegrees = roadmapProgress * 3.6;
+
+    return (
+        <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+            <div className="mb-10">
+                <h1 className="mb-2 text-3xl font-extrabold text-slate-900">Seu Dashboard de Atividade</h1>
+                <p className="text-slate-600">Acompanhe seu progresso na jornada de orientacao vocacional IA.</p>
             </div>
-          </CardContent>
-        </Card>
 
-        <div className="grid lg:grid-cols-2 gap-8">
-          {/* Assessments */}
-          <div className="space-y-6">
-            <h2 className="text-2xl font-bold">Avaliações Disponíveis</h2>
-            
-            {assessments.map((assessment, index) => (
-              <Card key={index} className="card-gradient hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="space-y-2">
-                      <CardTitle className="text-lg">{assessment.title}</CardTitle>
-                      <CardDescription>{assessment.description}</CardDescription>
-                      <div className="flex items-center space-x-2">
-                        <Badge variant="outline">⏱️ {assessment.duration}</Badge>
-                        {assessment.score && (
-                          <Badge className="bg-green-100 text-green-800">
-                            Score: {assessment.score}
-                          </Badge>
+            <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+                <div className="space-y-8 lg:col-span-2">
+                    <section className="flex flex-col items-center gap-8 rounded-2xl border border-slate-100 bg-white p-6 shadow-lg md:flex-row">
+                        <div
+                            className="relative h-32 w-32 rounded-full"
+                            style={{
+                                background: `conic-gradient(#3b82f6 ${progressDegrees}deg, #e2e8f0 0deg)`,
+                            }}
+                            aria-label={`Progresso do roadmap em ${roadmapProgress}%`}
+                        >
+                            <div className="absolute inset-2 rounded-full bg-white" />
+                            <div className="relative z-10 flex h-full items-center justify-center">
+                                <div className="text-center">
+                                    <span className="text-2xl font-bold text-slate-900">{roadmapProgress}%</span>
+                                    <p className="text-[10px] uppercase text-slate-500">Progresso</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex-1 text-center md:text-left">
+                            <h3 className="mb-2 text-xl font-bold text-slate-900">Progresso do Roadmap</h3>
+                            <p className="mb-4 text-sm text-slate-500">
+                                {hasAssessments
+                                    ? 'Voce esta no caminho certo! Complete as proximas atividades para desbloquear sua analise de carreira final.'
+                                    : 'Ainda nao encontramos atividades registradas. Inicie sua primeira avaliacao para montar seu roadmap.'}
+                            </p>
+                            <div className="flex flex-wrap justify-center gap-4 md:justify-start">
+                                <div className="flex items-center gap-2">
+                                    <span className="h-3 w-3 rounded-full bg-blue-500" />
+                                    <span className="text-xs font-medium">Etapa Atual: {currentStage}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <span className="h-3 w-3 rounded-full bg-slate-200" />
+                                    <span className="text-xs font-medium">Restam: {remainingActivities} Atividades</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <Button
+                            className="w-full rounded-xl bg-blue-500 px-6 py-2.5 font-semibold text-white shadow-lg shadow-blue-500/20 hover:bg-blue-600 md:w-auto"
+                            onClick={onStartAssessment}
+                        >
+                            {hasAssessments ? 'Continuar Roadmap' : 'Iniciar Avaliacao'}
+                        </Button>
+                    </section>
+
+                    <section className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-lg">
+                        <div className="flex items-center justify-between border-b border-slate-50 p-6">
+                            <h2 className="flex items-center gap-2 text-lg font-bold text-slate-900">
+                                <ClipboardCheck className="h-5 w-5 text-blue-500" />
+                                Minhas Avaliacoes
+                            </h2>
+                            <button type="button" className="text-sm font-medium text-blue-500 hover:underline">
+                                Ver todas
+                            </button>
+                        </div>
+
+                        {hasAssessments ? (
+                            <div className="divide-y divide-slate-50">
+                                {assessments.map((assessment) => {
+                                    const presentation = assessmentPresentation(assessment.status);
+                                    const Icon = presentation.icon;
+                                    const actionLabel = assessment.actionLabel ?? 'Continuar';
+
+                                    return (
+                                        <div
+                                            key={assessment.id}
+                                            className={`flex items-center justify-between p-6 transition-colors ${
+                                                assessment.status === 'pending' ? 'opacity-80' : 'hover:bg-slate-50'
+                                            }`}
+                                        >
+                                            <div className="flex items-center gap-4">
+                                                <div className={`flex h-12 w-12 items-center justify-center rounded-xl ${presentation.wrapperClass}`}>
+                                                    <Icon className="h-5 w-5" />
+                                                </div>
+                                                <div>
+                                                    <h4 className="font-bold text-slate-900">{assessment.title}</h4>
+                                                    <p className="text-xs text-slate-500">{subtitleByStatus(assessment)}</p>
+                                                </div>
+                                            </div>
+
+                                            {assessment.status === 'completed' ? (
+                                                <div className="flex items-center gap-6">
+                                                    <div className="text-right">
+                                                        <span className={`text-sm font-bold ${presentation.resultClass}`}>
+                                                            {assessment.resultLabel}
+                                                        </span>
+                                                        <p className="text-[10px] uppercase text-slate-400">{assessment.resultHint}</p>
+                                                    </div>
+                                                    <button
+                                                        type="button"
+                                                        className="rounded p-2 text-slate-400 transition-colors hover:text-blue-500"
+                                                        onClick={() =>
+                                                            assessment.actionUrl ? router.visit(assessment.actionUrl) : onStartAssessment()
+                                                        }
+                                                    >
+                                                        <ChevronRight className="h-4 w-4" />
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    className="rounded-lg border-blue-500 px-4 py-1.5 text-xs font-bold text-blue-500 hover:bg-blue-500 hover:text-white"
+                                                    onClick={() => (assessment.actionUrl ? router.visit(assessment.actionUrl) : onStartAssessment())}
+                                                >
+                                                    {actionLabel}
+                                                </Button>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        ) : (
+                            <div className="p-10 text-center">
+                                <p className="text-sm text-slate-500">Nenhuma avaliacao encontrada ate o momento.</p>
+                                <Button className="mt-4 bg-blue-500 text-white hover:bg-blue-600" onClick={onStartAssessment}>
+                                    Iniciar primeira avaliacao
+                                </Button>
+                            </div>
                         )}
-                      </div>
-                    </div>
-                    <Badge 
-                      variant={assessment.status === "Concluído" ? "default" : 
-                               assessment.status === "Em Progresso" ? "secondary" : "outline"}
-                    >
-                      {assessment.status}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span>Progresso</span>
-                        <span>{assessment.progress}%</span>
-                      </div>
-                      <Progress value={assessment.progress} />
-                    </div>
-                    
-                    <Button 
-                      onClick={onStartAssessment}
-                      className={assessment.status === "Concluído" ? "w-full" : "w-full btn-gradient"}
-                      variant={assessment.status === "Concluído" ? "outline" : "default"}
-                    >
-                      {assessment.status === "Concluído" ? "Ver Resultados" : 
-                       assessment.status === "Em Progresso" ? "Continuar" : "Iniciar Teste"}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          {/* Career Recommendations */}
-          <div className="space-y-6">
-            <h2 className="text-2xl font-bold">Recomendações de Carreira</h2>
-            
-            {careerRecommendations.map((career, index) => (
-              <Card key={index} className="card-gradient hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="space-y-2">
-                      <CardTitle className="text-lg">{career.career}</CardTitle>
-                      <CardDescription>{career.description}</CardDescription>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-vocia-600">{career.match}%</div>
-                      <div className="text-xs text-slate-500">Match</div>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div>
-                        <span className="text-slate-500">Salário:</span>
-                        <div className="font-semibold">{career.salary}</div>
-                      </div>
-                      <div>
-                        <span className="text-slate-500">Crescimento:</span>
-                        <div className="font-semibold text-green-600">{career.growth}</div>
-                      </div>
-                    </div>
-                    
-                    <Progress value={career.match} className="h-2" />
-                    
-                    <Button variant="outline" className="w-full">
-                      Explorar Carreira
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-
-            <Card className="card-gradient border-2 border-vocia-200">
-              <CardContent className="text-center py-8">
-                <div className="space-y-4">
-                  <div className="text-4xl">🎯</div>
-                  <h3 className="text-xl font-bold">Quer mais recomendações?</h3>
-                  <p className="text-slate-600">
-                    Complete mais testes para receber sugestões ainda mais precisas
-                  </p>
-                  <Button onClick={onStartAssessment} className="btn-gradient">
-                    Fazer Mais Testes
-                  </Button>
+                    </section>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
+
+                <div className="space-y-8 lg:col-span-1">
+                    <section className="rounded-2xl border border-slate-100 bg-white p-6 shadow-lg">
+                        <h3 className="mb-6 flex items-center gap-2 text-lg font-bold text-slate-900">
+                            <Star className="h-5 w-5 text-yellow-500" />
+                            Recomendacoes Recentes
+                        </h3>
+
+                        {hasRecommendations ? (
+                            <div className="space-y-4">
+                                {recommendations.map((recommendation) => (
+                                    <button
+                                        type="button"
+                                        key={recommendation.id}
+                                        className="group block w-full cursor-pointer rounded-xl border border-slate-100 p-4 text-left transition-colors hover:border-blue-500/50"
+                                        onClick={() => (recommendation.actionUrl ? router.visit(recommendation.actionUrl) : onStartAssessment())}
+                                    >
+                                        <div className="mb-2 flex items-start justify-between">
+                                            <h4 className="font-bold text-slate-900 transition-colors group-hover:text-blue-500">
+                                                {recommendation.title}
+                                            </h4>
+                                            <span
+                                                className={`rounded px-2 py-0.5 text-xs font-bold ${recommendationChipClass(
+                                                    recommendation.compatibility,
+                                                )}`}
+                                            >
+                                                {recommendation.compatibility}%
+                                            </span>
+                                        </div>
+                                        <p className="mb-3 text-xs text-slate-500">{recommendation.description}</p>
+                                        <span className="flex items-center gap-1 text-xs font-medium text-blue-500">
+                                            Ver detalhes <ArrowRight className="h-3 w-3" />
+                                        </span>
+                                    </button>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="rounded-xl border border-dashed border-slate-300 p-6 text-center">
+                                <p className="text-sm text-slate-500">Ainda nao ha recomendacoes. Complete uma avaliacao para gerar sugestoes.</p>
+                            </div>
+                        )}
+                    </section>
+
+                    <section className="relative overflow-hidden rounded-2xl border border-slate-100 bg-white p-6 shadow-lg">
+                        <div className="relative z-10">
+                            <h3 className="mb-4 flex items-center gap-2 text-lg font-bold text-slate-900">
+                                <Bell className="h-5 w-5 text-blue-500" />
+                                Proximos Passos
+                            </h3>
+
+                            {hasTasks ? (
+                                <div className="space-y-4">
+                                    {tasks.map((task) => (
+                                        <label
+                                            key={task.id}
+                                            className="group flex cursor-pointer items-center gap-3 rounded-lg border border-slate-100 bg-slate-50 p-3 transition hover:border-blue-200"
+                                        >
+                                            <span className="flex h-4 w-4 items-center justify-center">
+                                                {task.done ? (
+                                                    <Check className="h-4 w-4 text-blue-500" />
+                                                ) : (
+                                                    <Circle className="h-4 w-4 text-slate-400" />
+                                                )}
+                                            </span>
+                                            <span className="text-sm font-medium text-slate-700 transition-colors group-hover:text-blue-600">
+                                                {task.label}
+                                            </span>
+                                        </label>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="rounded-lg border border-dashed border-slate-300 p-4">
+                                    <p className="text-sm text-slate-600">Sem tarefas definidas por enquanto.</p>
+                                    <p className="mt-1 text-xs text-slate-500">
+                                        Conclua uma avaliacao para montarmos os proximos passos automaticamente.
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-blue-100 blur-2xl" />
+                        <div className="absolute -bottom-10 -left-10 h-24 w-24 rounded-full bg-indigo-100 blur-xl" />
+                        <Sparkles className="pointer-events-none absolute right-4 top-4 h-4 w-4 text-blue-400/80" />
+                    </section>
+                </div>
+            </div>
         </div>
-      </div>
-    </div>
-  );
+    );
 };
 
 export default Dashboard;

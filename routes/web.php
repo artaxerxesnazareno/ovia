@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AssessmentController;
+use App\Http\Controllers\AppDashboardController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -26,9 +27,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return Inertia::render('dashboard');
     })->middleware('admin')->name('admin.dashboard');
 
-    Route::get('app-dashboard', function () {
-        return Inertia::render('Index', ['initialView' => 'dashboard']);
-    })->name('app.dashboard');
+    Route::get('app-dashboard', AppDashboardController::class)->name('app.dashboard');
 
     Route::get('assessment/{assessmentId}/results', [AssessmentController::class, 'results'])
         ->name('results.show');
