@@ -1,0 +1,123 @@
+@startuml
+hide circle
+skinparam linetype ortho
+title OVIA - Diagrama de Base de Dados
+
+entity "users" as users {
+  *id : bigint <<PK>>
+  --
+  name : varchar
+  email : varchar <<UK>>
+  password : varchar
+  birth_date : date
+  gender : enum
+  phone : varchar
+  role : enum(admin,user)
+}
+
+entity "assessments" as assessments {
+  *id : bigint <<PK>>
+  *user_id : bigint <<FK>>
+  --
+  status : enum
+  started_at : timestamp
+  completed_at : timestamp
+  processing_time_seconds : int
+}
+
+entity "questions" as questions {
+  *id : bigint <<PK>>
+  --
+  category : enum
+  dimension : varchar
+  question_text : text
+  question_type : enum
+  options : json
+  weight : decimal
+  "order" : int
+  is_required : boolean
+  is_active : boolean
+}
+
+entity "assessment_responses" as responses {
+  *id : bigint <<PK>>
+  *assessment_id : bigint <<FK>>
+  *question_id : bigint <<FK>>
+  --
+  response_value : int
+  response_text : text
+}
+
+entity "courses" as courses {
+  *id : bigint <<PK>>
+  --
+  name : varchar
+  slug : varchar <<UK>>
+  description : text
+  duration_semesters : int
+  shifts : json
+  vacancies_per_year : int
+  coordinator_name : varchar
+  curriculum : text/json
+  admission_requirements : text
+  is_active : boolean
+}
+
+entity "career_paths" as career_paths {
+  *id : bigint <<PK>>
+  *course_id : bigint <<FK>>
+  --
+  title : varchar
+  description : text
+  average_salary_min : decimal
+  average_salary_max : decimal
+  market_demand : enum
+  key_skills : json
+  growth_potential : json
+}
+
+entity "recommendations" as recommendations {
+  *id : bigint <<PK>>
+  *assessment_id : bigint <<FK>>
+  *course_id : bigint <<FK>>
+  --
+  rank : int
+  compatibility_score : decimal
+  llm_analysis : json
+  justification : text
+  strengths : json
+  challenges : json
+}
+
+entity "roadmaps" as roadmaps {
+  *id : bigint <<PK>>
+  *recommendation_id : bigint <<FK>>
+  --
+  short_term_goals : json
+  medium_term_goals : json
+  long_term_goals : json
+  resources : json
+  certifications : json
+  books : json
+  communities : json
+  progress : json
+}
+
+entity "assessment_prompts" as prompts {
+  *id : bigint <<PK>>
+  --
+  version : varchar <<UK>>
+  system_prompt : text
+  user_prompt_template : text
+  parameters : json
+  is_active : boolean
+}
+
+users ||--o{ assessments : possui
+assessments ||--o{ responses : contem
+questions ||--o{ responses : responde
+assessments ||--o{ recommendations : gera
+courses ||--o{ recommendations : referencia
+courses ||--o{ career_paths : possui
+recommendations ||--|| roadmaps : detalha
+@enduml

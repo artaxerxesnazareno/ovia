@@ -22,6 +22,9 @@ test('profile information can be updated', function () {
         ->patch('/settings/profile', [
             'name' => 'Test User',
             'email' => 'test@example.com',
+            'age' => 21,
+            'gender' => 'male',
+            'favorite_activity' => 'Gosto de aprender coisas novas.',
         ]);
 
     $response
@@ -32,6 +35,9 @@ test('profile information can be updated', function () {
 
     expect($user->name)->toBe('Test User');
     expect($user->email)->toBe('test@example.com');
+    expect($user->age)->toBe(21);
+    expect($user->gender)->toBe('male');
+    expect($user->favorite_activity)->toBe('Gosto de aprender coisas novas.');
     expect($user->email_verified_at)->toBeNull();
 });
 

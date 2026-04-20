@@ -17,8 +17,10 @@ class UserSeeder extends Seeder
             'password' => Hash::make('password123'),
             'role' => 'admin',
             'birth_date' => '1990-01-01',
+            'age' => 36,
             'gender' => 'male',
             'phone' => '+244 123 456 789',
+            'favorite_activity' => 'Gosto de acompanhar o crescimento dos estudantes.',
             'email_verified_at' => now(),
         ]);
 

@@ -13,7 +13,7 @@ class AssessmentPromptService
         $assessment->loadMissing(['user', 'responses.question']);
 
         $user = $assessment->user;
-        $age = $user?->birth_date?->age;
+        $age = $user?->birth_date?->age ?? $user?->age;
         $gender = $this->formatGender((string) ($user?->gender ?? 'not_informed'));
 
         $objectiveResponses = $assessment->responses
@@ -84,8 +84,8 @@ PROMPT);
     private function formatGender(string $gender): string
     {
         return match ($gender) {
-            'male' => 'Masculino',
-            'female' => 'Feminino',
+            'male', 'M', 'm' => 'Masculino',
+            'female', 'F', 'f' => 'Feminino',
             'other' => 'Outro',
             'prefer_not_to_say' => 'Prefere nao informar',
             default => 'Nao informado',

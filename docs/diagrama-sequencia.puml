@@ -1,0 +1,44 @@
+@startuml
+title OVIA - Diagrama de Sequência (Submissão e Processamento)
+
+actor Utilizador
+participant "UI (Questions.tsx)" as UI
+participant "AssessmentController" as Controller
+database "Base de Dados" as DB
+participant "Fila" as Queue
+participant "ProcessAssessmentJob" as Job
+participant "AssessmentPromptService" as PromptService
+participant "LLMService" as LLMService
+participant "Provedor LLM" as LLM
+participant "RecommendationService" as RecService
+participant "UI (Processing.tsx)" as ProcessingUI
+
+Utilizador -> UI : Preenche respostas
+UI -> Controller : POST /assessment/{id}/save
+Controller -> DB : upsert assessment_responses
+Controller --> UI : { success: true }
+
+Utilizador -> UI : Enviar avaliação
+UI -> Controller : POST /assessment/{id}/submit
+Controller -> DB : validar obrigatórias + status=processing
+Controller -> Queue : dispatch ProcessAssessmentJob
+Controller --> UI : redirect /assessment/{id}/processing
+
+loop Polling
+  ProcessingUI -> Controller : GET /assessment/{id}/status
+  Controller -> DB : consultar status
+  Controller --> ProcessingUI : processing/completed/failed
+end
+
+Queue -> Job : executar
+Job -> DB : carregar avaliação + respostas
+Job -> PromptService : buildPrompt(assessment)
+PromptService --> Job : prompt estruturado
+Job -> LLMService : generateAssessmentJson(prompt)
+LLMService -> LLM : request JSON
+LLM --> LLMService : resposta
+LLMService --> Job : JSON validado
+Job -> RecService : saveRecommendations(assessment, json)
+RecService -> DB : salvar recommendations + roadmaps
+Job -> DB : status=completed, completed_at, tempo processamento
+@enduml

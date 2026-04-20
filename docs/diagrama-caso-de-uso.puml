@@ -1,0 +1,53 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+title OVIA - Diagrama de Caso de Uso
+
+actor "Visitante" as Guest
+actor "Utilizador" as User
+actor "Administrador" as Admin
+actor "Worker de Fila" as QueueWorker
+actor "Provedor LLM\n(Gemini/DeepSeek)" as LLM
+
+User --|> Guest
+Admin --|> User
+
+rectangle "Sistema OVIA" {
+  usecase "Registar e autenticar" as UCAuth
+  usecase "Gerir perfil" as UCProfile
+  usecase "Iniciar/continuar avaliação" as UCStart
+  usecase "Responder questionário" as UCAnswer
+  usecase "Salvar respostas automaticamente" as UCAutosave
+  usecase "Submeter avaliação" as UCSubmit
+  usecase "Acompanhar processamento" as UCTrack
+  usecase "Visualizar resultados" as UCResults
+  usecase "Visualizar detalhes do curso" as UCCourse
+  usecase "Aceder dashboard administrativo" as UCAdmin
+
+  usecase "Processar avaliação em background" as UCProcess
+  usecase "Construir prompt vocacional" as UCPrompt
+  usecase "Gerar análise por IA" as UCAI
+  usecase "Persistir recomendações e roadmap" as UCPersist
+}
+
+Guest --> UCAuth
+User --> UCProfile
+User --> UCStart
+User --> UCAnswer
+User --> UCSubmit
+User --> UCTrack
+User --> UCResults
+User --> UCCourse
+
+Admin --> UCAdmin
+
+UCAnswer .> UCAutosave : <<include>>
+UCSubmit .> UCProcess : <<include>>
+UCProcess .> UCPrompt : <<include>>
+UCProcess .> UCAI : <<include>>
+UCProcess .> UCPersist : <<include>>
+UCCourse .> UCResults : <<extend>>
+
+QueueWorker --> UCProcess
+LLM --> UCAI
+@enduml

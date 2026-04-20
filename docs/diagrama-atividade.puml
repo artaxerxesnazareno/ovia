@@ -1,0 +1,41 @@
+@startuml
+title OVIA - Diagrama de Atividade (Jornada da Avaliação)
+
+start
+:Autenticar utilizador;
+:Abrir página inicial da avaliação;
+
+if (Existe avaliação pendente?) then (Sim)
+  :Continuar avaliação existente;
+else (Não)
+  :Criar nova avaliação;
+endif
+
+:Responder questões por categoria;
+:Auto-save das respostas;
+
+if (Submeter avaliação?) then (Sim)
+  :Validar questões obrigatórias;
+  if (Há questões em falta?) then (Sim)
+    :Mostrar erro e manter no questionário;
+    :Retornar ao preenchimento das respostas;
+  else (Não)
+    :Atualizar estado para processing;
+    :Despachar job para fila;
+    :Mostrar página de processamento;
+    while (status != completed) is (A processar)
+      :Polling de estado;
+      if (status == failed) then (Falhou)
+        :Mostrar mensagem de falha e opção de retry;
+        stop
+      endif
+    endwhile (Concluído)
+    :Carregar resultados e roadmap;
+    :Exibir recomendações e detalhes do curso;
+  endif
+else (Não)
+  :Guardar progresso para retoma futura;
+endif
+
+stop
+@enduml
